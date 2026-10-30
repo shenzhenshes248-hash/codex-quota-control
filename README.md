@@ -65,6 +65,18 @@ API 以 codexquota 运行，原触发仍以 codexkeeper 运行。日志库位于
 
 源码安装也可从项目目录依次执行 `deploy/install.sh` 和 `deploy/install-https.sh`。回滚时，从源码目录以 root/sudo 执行 `bash deploy/rollback.sh`，恢复安装前的服务入口和计划启停状态；保留认证信息和日志。[部署变更和回滚说明](docs/deployment-changes.md)
 
+## 一条命令卸载
+
+适用于已安装的 v0.1.0 / v0.1.1 管理端，无需域名、管理 Token 或重新安装，下载后在目标 VPS 执行：
+
+```bash
+curl -fL 'https://github.com/shenzhenshes248-hash/codex-quota-control/releases/download/v0.1.1/codex-quota-control-uninstall.py' -o codex-quota-control-uninstall.py && sudo python3 codex-quota-control-uninstall.py
+```
+
+**此命令会删除本管理层的 API/HTTPS 服务、程序、独立管理 Token、执行日志、HTTPS 证书及 codexquota/codexquota-proxy 专用账户。需要的日志请提前自行留存。** 它保留原 `codexkeeper` 用户、Codex CLI 登录、原触发脚本及原 service/timer，并恢复安装管理层之前的原时间表和启停状态；原定时触发可能继续运行。发现触发任务正在执行或排队时，卸载会中止，等待任务完成后再运行即可。
+
+卸载手机 App 只删除手机客户端，不会卸载 VPS 服务或停止 VPS 定时任务。若只需恢复部署前状态并保留管理端数据，仍可使用前面的 `deploy/rollback.sh`。
+
 ## 接口
 
 全部接口要求 `Authorization: Bearer <独立管理Token>`，公开入口只提供 HTTPS。
