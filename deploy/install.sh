@@ -10,7 +10,7 @@ STATE=/var/lib/codex-quota-control
 SERVICE=codex-quota-trigger.service
 TIMER=codex-quota-trigger.timer
 
-getent passwd codexkeeper >/dev/null || { echo '未找到已检查的 codexkeeper 用户，停止安装'; exit 1; }
+getent passwd codexkeeper >/dev/null || { echo '缺少触发运行账户，请使用 deploy/setup.sh 域名或公网IP 完成初始化和登录'; exit 1; }
 [[ $(id -u codexkeeper) != 0 ]] || exit 1
 [[ -f /home/codexkeeper/codexkeeper-run/quota_trigger.py ]] || exit 1
 [[ $(systemctl show "$SERVICE" -p User --value) == codexkeeper ]] || exit 1
@@ -51,8 +51,10 @@ python3 - "$STATE/control/installed.json" <<'PY'
 import json, pathlib, subprocess, sys
 def value(prop):
     return subprocess.check_output(['systemctl', 'show', 'codex-quota-trigger.timer', '-p', prop, '--value'], text=True).strip()
+bootstrap=pathlib.Path(sys.argv[1]).with_name('bootstrap.json')
 pathlib.Path(sys.argv[1]).write_text(json.dumps({'timer_enabled': value('UnitFileState') == 'enabled',
-    'timer_active': value('ActiveState') == 'active'}))
+    'timer_active': value('ActiveState') == 'active',
+    'fresh_trigger': bootstrap.is_file() and json.loads(bootstrap.read_text()).get('created_trigger') is True}))
 PY
 chmod 0600 "$STATE/control/installed.json"
 trap 'echo "安装未完成，尝试恢复原服务入口"; bash "$SOURCE/deploy/rollback.sh" || true' ERR

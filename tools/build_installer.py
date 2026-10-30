@@ -10,12 +10,18 @@ if [[ ${1:-} == --help || $# -ne 1 ]]; then
   echo '用法：sudo bash codex-quota-control-install.sh 域名或公网IP'
   echo '域名方式：sudo bash codex-quota-control-install.sh api.example.com'
   echo '无域名方式：sudo bash codex-quota-control-install.sh 你的公网IP'
-  echo '已有 Codex 触发脚本及登录后，一条命令安装 API、HTTPS 并验证连接。'
+  echo '支持新 VPS：自动安装环境，引导个人 Codex 登录，再安装 API 和 HTTPS。'
   [[ ${1:-} == --help ]] && exit 0 || exit 2
 fi
 [[ $EUID -eq 0 ]] || { echo '请使用 root 或 sudo 运行'; exit 1; }
 [[ $(uname -s) == Linux ]] || { echo '此安装包仅用于 Linux VPS'; exit 1; }
-command -v python3 >/dev/null || { echo '需要 Python 3'; exit 1; }
+[[ $(uname -m) == x86_64 ]] || { echo '当前安装包支持 x86_64 VPS，暂不支持 ARM'; exit 1; }
+if ! command -v python3 >/dev/null; then
+  command -v apt-get >/dev/null || { echo '需要 Debian/Ubuntu 及 Python 3.10+'; exit 1; }
+  apt-get update
+  apt-get install -y python3 python3-venv ca-certificates
+fi
+python3 -c 'import sys; assert sys.version_info >= (3,10), "需要 Python 3.10+，请使用 Debian 12+ / Ubuntu 22.04+"'
 umask 077
 INSTALL_TEMP=$(mktemp -d /tmp/codex-quota-install.XXXXXXXX)
 trap 'rm -rf -- "$INSTALL_TEMP"' EXIT

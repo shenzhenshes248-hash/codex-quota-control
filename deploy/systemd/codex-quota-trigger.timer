@@ -1,0 +1,13 @@
+[Unit]
+Description=Codex trigger times in Beijing time (new installs start paused)
+
+[Timer]
+OnCalendar=*-*-* 08:00:00 Asia/Shanghai
+OnCalendar=*-*-* 13:00:00 Asia/Shanghai
+OnCalendar=*-*-* 18:00:00 Asia/Shanghai
+AccuracySec=1s
+Persistent=false
+Unit=codex-quota-trigger.service
+
+[Install]
+WantedBy=timers.target

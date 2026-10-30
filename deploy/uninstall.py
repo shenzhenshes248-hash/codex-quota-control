@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Remove this management layer and restore the original Codex timer."""
+"""Remove management and its fresh trigger, or restore a pre-existing trigger."""
 import argparse
 import json
 import os
@@ -51,7 +51,7 @@ def show(unit):
 def require_idle():
     for unit in (AUTO, MANUAL):
         data = show(unit)
-        if unit == MANUAL and data.get("LoadState") == "not-found":
+        if data.get("LoadState") == "not-found":
             continue
         if (data.get("ActiveState") not in ("inactive", "failed")
                 or data.get("Job", "") not in ("", "0", "[not set]")):
@@ -114,9 +114,16 @@ def uninstall():
             systemctl("disable", unit)
     for name in FILES:
         remove(name)
+    fresh = state.get("fresh_trigger") is True
+    if fresh:
+        systemctl("disable", TIMER)
+        for name in ("/etc/systemd/system/" + AUTO, "/etc/systemd/system/" + TIMER,
+                     "/home/codexkeeper/codexkeeper-run/quota_trigger.py"):
+            remove(name)
     systemctl("daemon-reload")
-    systemctl("enable" if state["timer_enabled"] else "disable", TIMER)
-    systemctl("start" if state["timer_active"] else "stop", TIMER)
+    if not fresh:
+        systemctl("enable" if state["timer_enabled"] else "disable", TIMER)
+        systemctl("start" if state["timer_active"] else "stop", TIMER)
     # Remove accounts before erasing the installation record, so a failed
     # account cleanup can be retried without losing the original timer state.
     for account in ("codexquota", "codexquota-proxy"):
@@ -124,13 +131,16 @@ def uninstall():
     for name in DIRECTORIES:
         remove(name)
     print("卸载完成：管理服务、程序、管理 Token、日志、证书和专用账户已清理。")
-    print("已恢复安装前的原定时计划及启停状态；原脚本、codexkeeper 和 Codex 登录均保留。")
+    if fresh:
+        print("新装时创建的触发脚本和定时任务已删除；Codex CLI、codexkeeper 和 Codex 登录保留。")
+    else:
+        print("已恢复安装前的原定时计划及启停状态；原脚本、codexkeeper 和 Codex 登录均保留。")
 
 
 def main():
     parser = argparse.ArgumentParser(description=(
-        "卸载 Codex 额度控制管理层，删除其 Token/日志/证书，恢复原定时计划。"
-        "保留原 Codex 登录和触发脚本。"))
+        "卸载管理层及其 Token/日志/证书。已有环境恢复原计划，新初始化环境移除自建触发任务。"
+        "保留 Codex CLI、运行账户及登录。"))
     parser.parse_args()
     if sys.platform != "linux" or os.geteuid() != 0:
         parser.exit(1, "请在目标 Linux VPS 上使用 root 或 sudo python3 运行\n")

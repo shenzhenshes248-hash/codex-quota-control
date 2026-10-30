@@ -1,0 +1,18 @@
+[Unit]
+Description=Codex quota trigger using the bundled original script
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=codexkeeper
+Group=codexkeeper
+WorkingDirectory=/home/codexkeeper/codexkeeper-run
+Environment=HOME=/home/codexkeeper
+Environment=PATH=/home/codexkeeper/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/python3 /home/codexkeeper/codexkeeper-run/quota_trigger.py --wait-minutes 10
+TimeoutStartSec=900
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true

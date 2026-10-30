@@ -88,6 +88,18 @@ class UninstallTest(unittest.TestCase):
         self.assertTrue(uninstall.path(uninstall.RECORD).exists())
         self.assertFalse(any(call[0] in ("stop", "disable") for call in self.calls))
 
+    def test_fresh_install_removes_created_timer_but_keeps_codex_login(self):
+        self.write(uninstall.RECORD, json.dumps({"timer_enabled": False, "timer_active": False, "fresh_trigger": True}))
+        self.write("/home/codexkeeper/.local/bin/codex", "keep cli")
+        uninstall.uninstall()
+        self.assertFalse(uninstall.path("/etc/systemd/system/" + uninstall.TIMER).exists())
+        self.assertFalse(uninstall.path("/etc/systemd/system/" + uninstall.AUTO).exists())
+        self.assertFalse(uninstall.path("/home/codexkeeper/codexkeeper-run/quota_trigger.py").exists())
+        self.assertEqual("keep original", uninstall.path("/home/codexkeeper/.codex/auth.json").read_text())
+        self.assertEqual("keep cli", uninstall.path("/home/codexkeeper/.local/bin/codex").read_text())
+        self.assertNotIn(("start", uninstall.TIMER), self.calls)
+        self.assertIn(("disable", uninstall.TIMER), self.calls)
+
     def test_task_starting_during_uninstall_restores_entry_points(self):
         self.becomes_busy = True
         with self.assertRaisesRegex(RuntimeError, "正在执行"):
