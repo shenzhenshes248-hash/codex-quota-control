@@ -1,0 +1,2 @@
+Defaults:codexquota env_reset
+codexquota ALL=(root) NOPASSWD: /usr/local/sbin/codex-quota-helper ""

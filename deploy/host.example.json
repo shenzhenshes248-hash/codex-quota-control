@@ -1,0 +1,12 @@
+{
+  "run_user": "codexkeeper",
+  "run_group": "codexkeeper",
+  "working_directory": "/home/codexkeeper/codexkeeper-run",
+  "command": [
+    "/usr/bin/python3",
+    "/home/codexkeeper/codexkeeper-run/quota_trigger.py",
+    "--wait-minutes",
+    "10"
+  ],
+  "execution_timeout_seconds": 840
+}

@@ -1,0 +1,24 @@
+[Unit]
+Description=Codex quota management API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=codexquota
+Group=codexquota
+WorkingDirectory=/opt/codex-quota-control/server
+LoadCredential=management-token:/etc/codex-quota-control/management-token
+ExecStart=/opt/codex-quota-control/venv/bin/python -m uvicorn quota_control.api:app --host 127.0.0.1 --port 8787 --workers 1 --no-access-log
+Restart=on-failure
+RestartSec=3
+UMask=0077
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/etc/systemd/system/codex-quota-trigger.timer.d /var/lib/codex-quota-control
+# NoNewPrivileges must remain false for the single, restricted sudo helper.
+NoNewPrivileges=false
+
+[Install]
+WantedBy=multi-user.target

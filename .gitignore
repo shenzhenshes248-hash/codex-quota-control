@@ -1,0 +1,15 @@
+.tools/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+.idea/
+dist/
+tools/*
+!tools/package_delivery.py
+!tools/build_installer.py
