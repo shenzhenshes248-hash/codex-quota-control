@@ -24,4 +24,12 @@ class ModelsTest {
         for (url in listOf("http://example.com", "https://user:secret@example.com", "https://example.com?token=test"))
             assertThrows(IllegalArgumentException::class.java) { ConnectionConfig(url, token).normalized() }
     }
+    @Test fun acceptsHttpsPublicIpWithoutADomain() {
+        val token = "a".repeat(48)
+        for (url in listOf("https://38.207.137.194:8443", "https://[2606:4700:4700::1111]:8443"))
+            assertEquals(url, ConnectionConfig("$url/", token).normalized().address)
+        assertThrows(IllegalArgumentException::class.java) {
+            ConnectionConfig("http://38.207.137.194:8443", token).normalized()
+        }
+    }
 }

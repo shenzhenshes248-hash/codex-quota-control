@@ -3,7 +3,7 @@
     auto_https disable_redirects
 }
 
-# Replace api.example.com with the confirmed hostname. 443 remains owned by Xray.
+# The installer renders a domain or public IP; IPs use the shortlived ACME profile.
 https://api.example.com:8443 {
     tls {
         issuer acme {

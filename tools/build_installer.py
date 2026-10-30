@@ -7,7 +7,9 @@ bundle = (root / "dist/codex-quota-control-server.tar.gz").read_bytes()
 header = r'''#!/usr/bin/env bash
 set -euo pipefail
 if [[ ${1:-} == --help || $# -ne 1 ]]; then
-  echo '用法：sudo bash codex-quota-control-install.sh 你的域名'
+  echo '用法：sudo bash codex-quota-control-install.sh 域名或公网IP'
+  echo '域名方式：sudo bash codex-quota-control-install.sh api.example.com'
+  echo '无域名方式：sudo bash codex-quota-control-install.sh 你的公网IP'
   echo '已有 Codex 触发脚本及登录后，一条命令安装 API、HTTPS 并验证连接。'
   [[ ${1:-} == --help ]] && exit 0 || exit 2
 fi

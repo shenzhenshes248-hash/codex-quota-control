@@ -49,7 +49,7 @@ class QuotaApi(private val config: ConnectionConfig) {
             } catch (_: SocketTimeoutException) {
                 throw ApiException("连接超时，操作结果尚未确认，请刷新 VPS 状态")
             } catch (_: SSLException) {
-                throw ApiException("HTTPS 证书验证失败，请检查域名和服务器证书")
+                throw ApiException("HTTPS 证书验证失败，请检查手机/VPS 时间、域名或 IP 与服务器证书")
             } catch (_: java.io.IOException) {
                 throw ApiException("网络连接失败，请检查网络、API 地址及 VPS 状态")
             } finally {

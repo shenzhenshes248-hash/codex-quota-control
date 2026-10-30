@@ -10,7 +10,7 @@ dist = root / "dist"
 dist.mkdir(exist_ok=True)
 apk = root / "android/app/build/outputs/apk/debug/app-debug.apk"
 assert apk.is_file()
-shutil.copy2(apk, dist / "Codex额度控制-0.1.0-debug.apk")
+shutil.copy2(apk, dist / "Codex额度控制-0.1.1-debug.apk")
 skip = {".git", ".tools", ".gradle", ".pytest_cache", "__pycache__", "build", "dist", ".idea"}
 files = []
 for folder, dirs, names in os.walk(root):

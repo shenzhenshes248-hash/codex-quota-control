@@ -2,7 +2,7 @@
 
 中文 Android 客户端和 VPS 管理接口。手机负责远程管理，VPS 的 systemd 独立执行计划；手机关机、断网或关闭 App 不影响已保存的计划。
 
-[下载 APK 和安装包](https://github.com/shenzhenshes248-hash/codex-quota-control/releases/tag/v0.1.0) · [原触发脚本源码](server/legacy/quota_trigger.py) · [测试结果](docs/test-results.md)
+[下载 APK 和安装包](https://github.com/shenzhenshes248-hash/codex-quota-control/releases/tag/v0.1.1) · [原触发脚本源码](server/legacy/quota_trigger.py) · [测试结果](docs/test-results.md)
 
 ## 环境要求
 
@@ -11,21 +11,33 @@
 - systemd、Python 3.10+（含 venv）、sudo，以及 root/sudo 权限。
 - 已有 `codexkeeper` 用户，该用户的 Codex CLI 已完成登录，并能正常运行原触发逻辑。
 - 原脚本位于 `/home/codexkeeper/codexkeeper-run/quota_trigger.py`，已有 `codex-quota-trigger.service` 和 `codex-quota-trigger.timer`。
-- 自己的域名已解析到目标 VPS；TCP 80 用于 HTTPS 证书验证/续期，TCP 8443 用于管理接口。443 保留给已有业务。
+- 二选一：已解析到目标 VPS 的域名，或该 VPS 的固定公网 IP（无需域名）。支持 IPv4/IPv6。
+- TCP 80 用于 HTTPS 证书验证/续期，TCP 8443 用于管理接口；安装器需要这两个端口空闲并可从公网访问。443 保留给已有业务。
+- VPS 系统时间准确，以便验证下载连接和 HTTPS 证书。
 
 全新 VPS 请先准备原触发脚本、运行用户、Codex 登录和原 systemd 服务。此安装包安装远程管理层，保留原触发逻辑和认证信息。[原脚本备份及说明](server/legacy/README.md)
 
 ## 一条命令下载并安装
 
-**先将下面命令末尾的 `api.example.com` 替换为你自己的域名。** 在目标 VPS 的终端运行完整一行，包含下载安装包的步骤，无需提前手动上传文件：
+选择下面一种方式，在目标 VPS 的终端运行完整一行。安装器会自动识别域名或 IP，无需提前手动上传文件。
+
+**有域名：** 将末尾的 `api.example.com` 替换成已解析到目标 VPS 的域名。
 
 ```bash
-curl -fL 'https://github.com/shenzhenshes248-hash/codex-quota-control/releases/download/v0.1.0/codex-quota-control-install.sh' -o codex-quota-control-install.sh && sudo bash codex-quota-control-install.sh api.example.com
+curl -fL 'https://github.com/shenzhenshes248-hash/codex-quota-control/releases/download/v0.1.1/codex-quota-control-install.sh' -o codex-quota-control-install.sh && sudo bash codex-quota-control-install.sh api.example.com
 ```
 
-仓库和 Release 均已公开，下载不需要 GitHub 登录或 GitHub Token。安装包自动解包、安装管理 API/HTTPS 并验证连接；下载失败时不会继续执行安装。已有部署会跳过安装，保留原 Token、时间计划和 HTTPS 配置。
+**没有域名：** 将末尾的 `你的公网IP` 替换成目标 VPS 的固定公网 IPv4 或 IPv6 地址，不要加 `https://`、端口或路径。
 
-安装完成后的 App 接口地址为 `https://你的域名:8443`。管理 Token 由 VPS 随机生成，在自己的 VPS 终端查看：
+```bash
+curl -fL 'https://github.com/shenzhenshes248-hash/codex-quota-control/releases/download/v0.1.1/codex-quota-control-install.sh' -o codex-quota-control-install.sh && sudo bash codex-quota-control-install.sh 你的公网IP
+```
+
+无域名方式通过 Let's Encrypt 的 `shortlived` 配置申请公网可信 IP 证书，由 Caddy 自动续期，无需在手机安装自签名证书。IP 证书有效期约 6 天，需要持续开放 TCP 80 以供续期；IP 变化后须重新配置入口和 App 地址。[IP 证书官方说明](https://letsencrypt.org/2026/01/15/6day-and-ip-general-availability/)
+
+仓库和 Release 均已公开，下载不需要 GitHub 登录或 GitHub Token。安装包自动解包、安装管理 API/HTTPS 并验证连接；下载失败时不会继续执行安装。已有部署使用原入口地址重复安装时会跳过安装，保留原 Token、时间计划和 HTTPS 配置；填写不同入口会停止，不自动切换现有服务。
+
+安装完成后会显示 App 接口地址：域名方式为 `https://你的域名:8443`，无域名方式为 `https://你的公网IP:8443`，IPv6 为 `https://[你的IPv6]:8443`。管理 Token 由 VPS 随机生成，在自己的 VPS 终端查看：
 
 ```bash
 sudo cat /etc/codex-quota-control/management-token
@@ -36,8 +48,8 @@ sudo cat /etc/codex-quota-control/management-token
 ## 手机客户端
 
 - Android 8.0 及以上；Kotlin、Compose、Material 3，跟随系统深色模式。
-- 从 [Release](https://github.com/shenzhenshes248-hash/codex-quota-control/releases/tag/v0.1.0) 下载并安装 APK。
-- 在“设置”中将 API 地址改成自己的 `https://你的域名:8443`，填入自己 VPS 生成的管理 Token，点击“测试连接”后保存。不要沿用其他人的服务器地址。
+- 从 [Release](https://github.com/shenzhenshes248-hash/codex-quota-control/releases/tag/v0.1.1) 下载并安装 APK；已有 v0.1.0 可覆盖升级，连接配置保留。
+- 在“设置”中填写安装结束时显示的 HTTPS 地址，域名和公网 IP 均可，填入自己 VPS 生成的管理 Token，点击“测试连接”后保存。
 - Token 经 Android Keystore 的 AES-GCM 加密保存在手机本机，APK 中没有预置管理 Token。
 - 首页编辑时间后点击“保存计划至 VPS”；启停按钮立即同步。24 小时时间选择器统一使用北京时间。
 - “立即触发一次”返回 systemd 接收状态，App 随后查询真实成功/跳过/失败结果。关闭 App 不影响服务端任务。

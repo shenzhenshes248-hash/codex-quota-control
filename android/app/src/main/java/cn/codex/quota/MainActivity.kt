@@ -264,7 +264,7 @@ private fun Logs(state: UiState) {
 @Composable
 private fun Settings(state: UiState, vm: QuotaViewModel) {
     var address by remember(state.config.address) {
-        mutableStateOf(state.config.address.ifBlank { "https://cod.futur-ix.top:8443" })
+        mutableStateOf(state.config.address)
     }
     // The plaintext token is kept only in memory; it is never saved in an activity state bundle.
     var token by remember(state.config.token) { mutableStateOf(state.config.token) }
@@ -272,9 +272,11 @@ private fun Settings(state: UiState, vm: QuotaViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Section("VPS 连接设置") {
             OutlinedTextField(value = address, onValueChange = { address = it },
-                modifier = Modifier.fillMaxWidth(), label = { Text("VPS API 地址") },
+                modifier = Modifier.fillMaxWidth(), label = { Text("VPS API 地址（域名或 IP）") },
                 placeholder = { Text("https://api.example.com:8443") }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri), enabled = !state.busy)
+            Text("支持域名或公网 IP。无域名时填写 https://公网IP:8443，以安装完成后显示的地址为准。",
+                style = MaterialTheme.typography.bodySmall)
             OutlinedTextField(value = token, onValueChange = { token = it },
                 modifier = Modifier.fillMaxWidth(), label = { Text("独立管理 Token") },
                 visualTransformation = PasswordVisualTransformation(), singleLine = true,

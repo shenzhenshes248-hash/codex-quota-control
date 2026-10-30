@@ -17,7 +17,7 @@ data class ConnectionConfig(val address: String = "", val token: String = "") {
         require(uri.scheme == "https" && !uri.host.isNullOrBlank() &&
             uri.rawUserInfo == null && uri.rawQuery == null && uri.rawFragment == null &&
             uri.path.isNullOrEmpty() && (uri.port == -1 || uri.port in 1..65535)) {
-            "请输入 HTTPS 地址，例如 https://api.example.com:8443"
+            "请输入 HTTPS 域名或 IP 地址，例如 https://你的公网IP:8443"
         }
         require(token.trim().length >= 32 && token.trim().all { it.code in 33..126 }) {
             "管理 Token 至少需要 32 个英文字符或数字"
